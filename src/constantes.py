@@ -1,7 +1,7 @@
 G = 6.67430e-11  # constante gravitationnelle (m^3 kg^-1 s^-2)
 # Pas de temps: 1 heure (3600 s) et ~8760 pas pour ~1 an
-dt = 5 *3600.0      # delta t en secondes (1 heure)
-steps = 5 * 8760     # nombre de pas (~1 an en heures)
+dt = 10 *3600.0      # delta t en secondes (1 heure)
+steps = 10 * 8760     # nombre de pas (~1 an en heures)
 
 # Soleil
 sun_radius = 6.9634e8
@@ -17,7 +17,15 @@ vx_earth = 0.0
 vy_earth = 29780.0               
 vz_earth = 0.0
 
-# rajouter les autres planètes
+# Mars
+mars_radius = 3389500
+M_mars = 6.4185e23
+x_mars = 2.279e11
+y_mars = 0.0
+z_mars = 0.0
+vx_mars = 0.0
+vy_mars = 24080.0
+vz_mars = 0.0
 
 # Drap
 k_depth = 0.1
