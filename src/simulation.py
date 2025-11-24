@@ -51,7 +51,7 @@ class Simulation:
         vx_jupiter=vx_jupiter,
         vy_jupiter=vy_jupiter,
         vz_jupiter=vz_jupiter,
-    ):
+        display_scale=1.0):
         self._planets = []
         
         self._planets.append(
@@ -125,17 +125,25 @@ class Simulation:
         )
         
         self._sun = Soleil(sun_radius, M_sun)
+        self._display_scale = display_scale
         self._run()
 
     def _run(self):
-        # Échelle d'affichage : mettre les positions en unités relatives (1 ~= 1 AU)
-        scale = 1.0 / x_mercury
+        # Échelle d'affichage : utiliser la plus grande orbite initiale comme référence
+        # (la planète la plus éloignée sera ~1.0 dans l'affichage)
+        max_orbit = 0.0
+        for planet in self._planets:
+            r0 = abs(planet.get_position[0])
+            if r0 > max_orbit:
+                max_orbit = r0
+        
+        self._scale = 1.0 / max_orbit
 
         # initialiser les listes de positions avec la position initiale (mise à l'échelle)
         for planet in self._planets:
-            planet._pos_x.append(planet.get_position[0] * scale)
-            planet._pos_y.append(planet.get_position[1] * scale)
-            planet._pos_z.append(planet.get_position[2] * scale)
+            planet._pos_x.append(planet.get_position[0] * self._scale)
+            planet._pos_y.append(planet.get_position[1] * self._scale)
+            planet._pos_z.append(planet.get_position[2] * self._scale)
 
         for i in range(steps):
             for planet in self._planets:
@@ -146,23 +154,35 @@ class Simulation:
                 planet.apply_acceleration(acc, dt)
                 planet.update_position(dt)
                 # stocker la position mise à l'échelle pour le tracé
-                planet._pos_x.append(planet.get_position[0] * scale)
-                planet._pos_y.append(planet.get_position[1] * scale)
-                planet._pos_z.append(planet.get_position[2] * scale)
+                planet._pos_x.append(planet.get_position[0] * self._scale)
+                planet._pos_y.append(planet.get_position[1] * self._scale)
+                planet._pos_z.append(planet.get_position[2] * self._scale)
         self._plot()
 
     def _plot(self):
         fig = plt.figure(figsize=(9, 6))
         ax = fig.add_subplot(111, projection="3d")
         # Tracer en unités mises à l'échelle (1 ~= 1 AU)
-        grid = np.linspace(-2.5, 2.5, 150)
+        # Calculer l'étendue nécessaire d'après les positions enregistrées
+        max_coord = 0.0
+        for p in self._planets:
+            if p._pos_x:
+                max_coord = max(max_coord, np.nanmax(np.abs(p._pos_x)))
+                max_coord = max(max_coord, np.nanmax(np.abs(p._pos_y)))
+                max_coord = max(max_coord, np.nanmax(np.abs(p._pos_z)))
+
+        # limit: prendre un peu de marge autour du max_coord
+        limit = max_coord * 1.5 
+
+        grid = np.linspace(-limit, limit, 300)
         X, Y = np.meshgrid(grid, grid)
         Z = np.zeros_like(X)
-        ax.plot_surface(X, Y, Z, cmap="plasma", alpha=0.15)
+        ax.plot_surface(X, Y, Z, cmap="plasma", alpha=0.08)
 
         # appliquer la même échelle que dans _run
-        scale = 1.0 / x_mercury
+        scale = getattr(self, "_scale", (1.0 / x_earth))
 
+        # tracer le Soleil (surface + point central) mis à l'échelle
         ax.plot_surface(
             self._sun.get_X_sun * scale,
             self._sun.get_Y_sun * scale,
@@ -170,74 +190,31 @@ class Simulation:
             color="gold",
             shade=True,
         )
-        # marqueur central fixe pour le Soleil (taille en points)
-        ax.scatter([0.0], [0.0], [0.0], color="gold", s=200)
-        (animated_earth,) = ax.plot(
-            [self._planets[0]._pos_x[0]],
-            [self._planets[0]._pos_y[0]],
-            [self._planets[0]._pos_z[0] + 0.05],
-            "o",
-            color="blue",
-        )
-        (animated_mars,) = ax.plot(
-            [self._planets[1]._pos_x[0]],
-            [self._planets[1]._pos_y[0]],
-            [self._planets[1]._pos_z[0] + 0.05],
-            "o",
-            color="red",
-        )
-        
-        (animated_mercury,) = ax.plot(
-            [self._planets[2]._pos_x[0]],
-            [self._planets[2]._pos_y[0]],
-            [self._planets[2]._pos_z[0] + 0.05],
-            "o",
-            color="gray",
-        )
-        
-        (animated_venus,) = ax.plot(
-            [self._planets[3]._pos_x[0]],
-            [self._planets[3]._pos_y[0]],
-            [self._planets[3]._pos_z[0] + 0.05],
-            "o",
-            color="orange",
-        )
-        
-        (animated_jupiter,) = ax.plot(
-            [self._planets[4]._pos_x[0]],
-            [self._planets[4]._pos_y[0]],
-            [self._planets[4]._pos_z[0] + 0.05],
-            "o",
-            color="brown",
-        )
+        # taille visuelle du Soleil (en points^2 pour scatter)
+        sun_vis_size = max(40, 1000 * (self._sun.get_radius * scale) / max(limit, 1e-9))
+        ax.scatter([0.0], [0.0], [0.0], color="gold", s=sun_vis_size)
+
+        # Tracer les planètes (marqueurs) et préparer les objets animés
+        animated_objs = []
+        colors = ["blue", "red", "gray", "orange", "brown"]
+        for idx, planet in enumerate(self._planets):
+            # taille visuelle minimale pour être visible
+            vis_size = max(4, 600 * (planet._radius * scale) / max(limit, 1e-9))
+            (animated,) = ax.plot(
+                [planet._pos_x[0]], [planet._pos_y[0]], [planet._pos_z[0] + 0.0], "o",
+                color=colors[idx % len(colors)], markersize=vis_size
+            )
+            animated_objs.append(animated)
 
         def _update(i):
-            animated_earth.set_data(
-                [self._planets[0]._pos_x[i]], [self._planets[0]._pos_y[i]]
-            )
-            animated_earth.set_3d_properties([self._planets[0]._pos_z[i] + 0.05])
-            
-            animated_mars.set_data(
-                [self._planets[1]._pos_x[i]], [self._planets[1]._pos_y[i]]
-            )
-            animated_mars.set_3d_properties([self._planets[1]._pos_z[i] + 0.05])
-            
-            animated_mercury.set_data(
-                [self._planets[2]._pos_x[i]], [self._planets[2]._pos_y[i]]
-            )
-            animated_mercury.set_3d_properties([self._planets[2]._pos_z[i] + 0.05])
-            
-            animated_venus.set_data(
-                [self._planets[3]._pos_x[i]], [self._planets[3]._pos_y[i]]
-            )
-            animated_venus.set_3d_properties([self._planets[3]._pos_z[i] + 0.05])
-            
-            animated_jupiter.set_data(
-                [self._planets[4]._pos_x[i]], [self._planets[4]._pos_y[i]]
-            )
-            animated_jupiter.set_3d_properties([self._planets[4]._pos_z[i] + 0.05])
-            
-            return animated_earth, animated_mars, animated_mercury, animated_venus, animated_jupiter
+            objs = []
+            for idx, animated in enumerate(animated_objs):
+                p = self._planets[idx]
+                animated.set_data([p._pos_x[i]], [p._pos_y[i]])
+                animated.set_3d_properties([p._pos_z[i] + 0.0])
+                objs.append(animated)
+            return tuple(objs)
+        
         ani = animation.FuncAnimation(
             fig, _update, frames=len(self._planets[0]._pos_x), interval=10, blit=True
         )
