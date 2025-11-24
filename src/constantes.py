@@ -27,11 +27,37 @@ vx_mars = 0.0
 vy_mars = 24080.0
 vz_mars = 0.0
 
-# Drap
-k_depth = 0.1
-k_sigma = 2.0
-depth = k_depth * M_sun
-sigma = k_sigma * sun_radius
+# Mercure
+mercury_radius = 2439700
+M_mercury = 3.3011e23
+x_mercury = 5.791e10
+y_mercury = 0.0
+z_mercury = 0.0
+vx_mercury = 0.0
+vy_mercury = 47362.0
+vz_mercury = 0.0
+
+# Vénus
+
+venus_radius = 6051800
+M_venus = 4.8675e24
+x_venus = 1.082e11
+y_venus = 0.0
+z_venus = 0.0
+vx_venus = 0.0
+vy_venus = 35020.0
+vz_venus = 0.0
+
+# Jupiter
+
+jupiter_radius = 69911000
+M_jupiter = 1.8982e27
+x_jupiter = 7.785e11
+y_jupiter = 0.0
+z_jupiter = 0.0
+vx_jupiter = 0.0
+vy_jupiter = 13070.0
+vz_jupiter = 0.0
 
 # Bille
 x, y = 2.0, 0.0 # position initiale de la bille
