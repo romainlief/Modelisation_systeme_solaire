@@ -19,6 +19,7 @@ class Simulation:
         vx_earth=vx_earth,
         vy_earth=vy_earth,
         vz_earth=vz_earth,
+        color_earth=color_earth,
         mars_radius=mars_radius,
         M_mars=M_mars,
         x_mars=x_mars,
@@ -27,6 +28,7 @@ class Simulation:
         vx_mars=vx_mars,
         vy_mars=vy_mars,
         vz_mars=vz_mars,
+        color_mars=color_mars,
         mercury_radius=mercury_radius,
         M_mercury=M_mercury,
         x_mercury=x_mercury,
@@ -35,6 +37,7 @@ class Simulation:
         vx_mercury=vx_mercury,
         vy_mercury=vy_mercury,
         vz_mercury=vz_mercury,
+        color_mercury=color_mercury,
         venus_radius=venus_radius,
         M_venus=M_venus,
         x_venus=x_venus,
@@ -43,6 +46,7 @@ class Simulation:
         vx_venus=vx_venus,
         vy_venus=vy_venus,
         vz_venus=vz_venus,
+        color_venus=color_venus,
         jupiter_radius=jupiter_radius,
         M_jupiter=M_jupiter,
         x_jupiter=x_jupiter,
@@ -51,6 +55,7 @@ class Simulation:
         vx_jupiter=vx_jupiter,
         vy_jupiter=vy_jupiter,
         vz_jupiter=vz_jupiter,
+        color_jupiter=color_jupiter,
         saturn_radius=saturn_radius,
         M_saturn=M_saturn,
         x_saturn=x_saturn,
@@ -59,6 +64,7 @@ class Simulation:
         vx_saturn=vx_saturn,
         vy_saturn=vy_saturn,
         vz_saturn=vz_saturn,
+        color_saturn=color_saturn,
         uranus_radius=uranus_radius,
         M_uranus=M_uranus,
         x_uranus=x_uranus,
@@ -67,6 +73,7 @@ class Simulation:
         vx_uranus=vx_uranus,
         vy_uranus=vy_uranus,
         vz_uranus=vz_uranus,
+        color_uranus=color_uranus,
         neptune_radius=neptune_radius,
         M_neptune=M_neptune,
         x_neptune=x_neptune,
@@ -75,6 +82,7 @@ class Simulation:
         vx_neptune=vx_neptune,
         vy_neptune=vy_neptune,
         vz_neptune=vz_neptune,
+        color_neptune=color_neptune,
         display_scale=1.0):
         self._planets = []
         
@@ -89,6 +97,7 @@ class Simulation:
                 vx_earth,
                 vy_earth,
                 vz_earth,
+                color_earth,
             )
         )
         
@@ -103,6 +112,7 @@ class Simulation:
                 vx_mars,
                 vy_mars,
                 vz_mars,
+                color_mars,
             )
         )
         
@@ -117,6 +127,7 @@ class Simulation:
                 vx_mercury,
                 vy_mercury,
                 vz_mercury,
+                color_mercury,
             )
         )
         
@@ -131,6 +142,7 @@ class Simulation:
                 vx_venus,
                 vy_venus,
                 vz_venus,
+                color_venus,
             )
         )
         
@@ -145,6 +157,7 @@ class Simulation:
                 vx_jupiter,
                 vy_jupiter,
                 vz_jupiter,
+                color_jupiter,
             )
         )
         
@@ -159,6 +172,7 @@ class Simulation:
                 vx_saturn,
                 vy_saturn,
                 vz_saturn,
+                color_saturn,
             )
         )
         
@@ -173,6 +187,7 @@ class Simulation:
                 vx_uranus,
                 vy_uranus,
                 vz_uranus,
+                color_uranus,
             )
         )
         
@@ -187,6 +202,7 @@ class Simulation:
                 vx_neptune,
                 vy_neptune,
                 vz_neptune,
+                color_neptune,
             )
         )
         
@@ -228,17 +244,15 @@ class Simulation:
         self._plot()
 
     def _plot(self):
-        # --- Création de la figure en plein écran ---
-        fig = plt.figure(figsize=(20, 12))  # grande base
+        fig = plt.figure(figsize=(20, 12)) 
         manager = plt.get_current_fig_manager()
         try:
             manager.full_screen_toggle()     # plein écran natif
         except:
-            pass  # certains backends ne le supportent pas
+            pass  
 
         ax = fig.add_subplot(111, projection="3d")
 
-        # Tracer en unités mises à l'échelle (1 ~= 1 AU)
         max_coord = 0.0
         for p in self._planets:
             if p._pos_x:
@@ -267,7 +281,7 @@ class Simulation:
 
         # Planètes
         animated_objs = []
-        colors = ["blue", "red", "gray", "orange", "brown", "beige", "lightblue", "cyan"]
+        colors = [planet.get_color for planet in self._planets]
 
         for idx, planet in enumerate(self._planets):
             vis_size = max(4, 600 * (planet._radius * scale) / max(limit, 1e-9))
@@ -297,6 +311,11 @@ class Simulation:
         plt.show()
         
     def _set_axes_equal(self, ax):
+        """Set 3D plot axes to equal scale.
+
+        Args:
+            ax (matplotlib.axes._subplots.Axes3DSubplot): 3D axes object.
+        """
         x_limits, y_limits, z_limits = ax.get_xlim3d(), ax.get_ylim3d(), ax.get_zlim3d()
         x_range, y_range, z_range = [
             abs(l[1] - l[0]) for l in (x_limits, y_limits, z_limits)
@@ -308,6 +327,15 @@ class Simulation:
         ax.set_zlim3d([centers[2] - max_range / 2, centers[2] + max_range / 2])
     
     def _scale_position(self, pos, k=0.35):
+        """ Scale the position vector for better visualization.
+
+        Args:
+            pos (np.ndarray): position vector.
+            k (float, optional): scaling exponent. Defaults to 0.35.
+
+        Returns:
+            np.ndarray: scaled position vector.
+        """
         r = np.linalg.norm(pos)
         if r == 0:
             return pos

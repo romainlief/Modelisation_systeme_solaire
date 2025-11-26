@@ -1,7 +1,7 @@
 import numpy as np
 
 class Planete:
-    def __init__(self, name, radius, mass, x, y, z, vx, vy, vz):
+    def __init__(self, name, radius, mass, x, y, z, vx, vy, vz, color):
         self._name = name
         self._radius = radius
         self._mass = mass
@@ -26,6 +26,8 @@ class Planete:
         self._pos_x = []
         self._pos_y = []
         self._pos_z = []
+        
+        self._color = color
         
     def update_position(self, dt):
         self._pos += self._vel * dt
@@ -80,3 +82,7 @@ class Planete:
     @get_Z.setter
     def set_Z(self, new_Z):
         self._Z = new_Z
+        
+    @property
+    def get_color(self):
+        return self._color

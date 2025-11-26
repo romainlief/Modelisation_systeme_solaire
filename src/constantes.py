@@ -16,6 +16,7 @@ z_earth = 0.0
 vx_earth = 0.0
 vy_earth = 29780.0               
 vz_earth = 0.0
+color_earth = "blue"
 
 # Mars
 mars_radius = 3389500
@@ -26,6 +27,7 @@ z_mars = 0.0
 vx_mars = 0.0
 vy_mars = 24080.0
 vz_mars = 0.0
+color_mars = "red"
 
 # Mercure
 mercury_radius = 2439700
@@ -36,6 +38,7 @@ z_mercury = 0.0
 vx_mercury = 0.0
 vy_mercury = 47362.0
 vz_mercury = 0.0
+color_mercury = "gray"
 
 # Vénus
 
@@ -47,6 +50,7 @@ z_venus = 0.0
 vx_venus = 0.0
 vy_venus = 35020.0
 vz_venus = 0.0
+color_venus = "orange"
 
 # Jupiter
 
@@ -58,6 +62,7 @@ z_jupiter = 0.0
 vx_jupiter = 0.0
 vy_jupiter = 13070.0
 vz_jupiter = 0.0
+color_jupiter = "brown"
 
 # Saturne
 
@@ -69,6 +74,7 @@ z_saturn = 0.0
 vx_saturn = 0.0
 vy_saturn = 9680.0
 vz_saturn = 0.0
+color_saturn = "beige"
 
 # Uranus
 
@@ -80,6 +86,7 @@ z_uranus = 0.0
 vx_uranus = 0.0
 vy_uranus = 6800.0
 vz_uranus = 0.0
+color_uranus = "lightblue"
 
 # Neptune
 
@@ -91,3 +98,4 @@ z_neptune = 0.0
 vx_neptune = 0.0
 vy_neptune = 5430.0
 vz_neptune = 0.0
+color_neptune = "cyan"
