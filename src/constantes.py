@@ -59,6 +59,35 @@ vx_jupiter = 0.0
 vy_jupiter = 13070.0
 vz_jupiter = 0.0
 
-# Bille
-x, y = 2.0, 0.0 # position initiale de la bille
-vx, vy = 0.0, 1.0 # vitesse initiale de la bille
+# Saturne
+
+saturn_radius = 58232000
+M_saturn = 5.6834e26
+x_saturn = 1.433e12
+y_saturn = 0.0
+z_saturn = 0.0
+vx_saturn = 0.0
+vy_saturn = 9680.0
+vz_saturn = 0.0
+
+# Uranus
+
+uranus_radius = 25362000
+M_uranus = 8.6810e25
+x_uranus = 2.877e12
+y_uranus = 0.0
+z_uranus = 0.0
+vx_uranus = 0.0
+vy_uranus = 6800.0
+vz_uranus = 0.0
+
+# Neptune
+
+neptune_radius = 24622000
+M_neptune = 1.02413e26
+x_neptune = 4.503e12
+y_neptune = 0.0
+z_neptune = 0.0
+vx_neptune = 0.0
+vy_neptune = 5430.0
+vz_neptune = 0.0
