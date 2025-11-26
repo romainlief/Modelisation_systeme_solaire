@@ -1,4 +1,5 @@
 import numpy as np
+from math import pi
 from constantes import sun_radius
 
 class Soleil:
@@ -12,6 +13,8 @@ class Soleil:
         self._X_sun = sun_radius * np.outer(np.cos(self._u), np.sin(self._v))
         self._Y_sun = sun_radius * np.outer(np.sin(self._u), np.sin(self._v))
         self._Z_sun = sun_radius * np.outer(np.ones_like(self._u), np.cos(self._v))
+        
+        self._circumference = 2 * radius * pi
 
     @property
     def get_radius(self):
@@ -32,3 +35,7 @@ class Soleil:
     @property
     def get_Z_sun(self):
         return self._Z_sun
+    
+    @property
+    def get_circumference(self):
+        return self._circumference

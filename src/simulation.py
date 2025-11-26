@@ -83,9 +83,13 @@ class Simulation:
         vy_neptune=vy_neptune,
         vz_neptune=vz_neptune,
         color_neptune=color_neptune,
-        display_scale=1.0):
+        display_scale=1.0,
+        _camera_angle_turning = False,
+    ):
         self._planets = []
-        
+        self._camera_angle = 45.0 
+        self._camera_angle_turning = _camera_angle_turning
+
         self._planets.append(
             Planete(
                 "Earth",
@@ -100,7 +104,7 @@ class Simulation:
                 color_earth,
             )
         )
-        
+
         self._planets.append(
             Planete(
                 "Mars",
@@ -115,7 +119,7 @@ class Simulation:
                 color_mars,
             )
         )
-        
+
         self._planets.append(
             Planete(
                 "Mercure",
@@ -130,7 +134,7 @@ class Simulation:
                 color_mercury,
             )
         )
-        
+
         self._planets.append(
             Planete(
                 "Venus",
@@ -145,7 +149,7 @@ class Simulation:
                 color_venus,
             )
         )
-        
+
         self._planets.append(
             Planete(
                 "Jupiter",
@@ -160,7 +164,7 @@ class Simulation:
                 color_jupiter,
             )
         )
-        
+
         self._planets.append(
             Planete(
                 "Saturn",
@@ -175,7 +179,7 @@ class Simulation:
                 color_saturn,
             )
         )
-        
+
         self._planets.append(
             Planete(
                 "Uranus",
@@ -190,7 +194,7 @@ class Simulation:
                 color_uranus,
             )
         )
-        
+
         self._planets.append(
             Planete(
                 "Neptune",
@@ -205,7 +209,7 @@ class Simulation:
                 color_neptune,
             )
         )
-        
+
         self._sun = Soleil(sun_radius, M_sun)
         self._display_scale = display_scale
         self._run()
@@ -218,7 +222,7 @@ class Simulation:
             r0 = abs(planet.get_position[0])
             if r0 > max_orbit:
                 max_orbit = r0
-        
+
         self._scale = 1.0 / max_orbit
 
         # initialiser les listes de positions avec la position initiale (mise à l'échelle)
@@ -244,14 +248,56 @@ class Simulation:
         self._plot()
 
     def _plot(self):
-        fig = plt.figure(figsize=(20, 12)) 
+        fig = plt.figure(figsize=(20, 12))
         manager = plt.get_current_fig_manager()
         try:
-            manager.full_screen_toggle()     # plein écran natif
+            manager.full_screen_toggle()  # plein écran natif
         except:
-            pass  
+            pass
 
         ax = fig.add_subplot(111, projection="3d")
+
+        # ---- ZOOM UTILISATEUR ----
+        zoom_scale = 0.9  # facteur de zoom (scroll in/out)
+
+        def on_scroll(event):
+            cur_xlim = ax.get_xlim3d()
+            cur_ylim = ax.get_ylim3d()
+            cur_zlim = ax.get_zlim3d()
+
+            x_center = np.mean(cur_xlim)
+            y_center = np.mean(cur_ylim)
+            z_center = np.mean(cur_zlim)
+
+            if event.button == "up":  # zoom in
+                scale = zoom_scale
+            else:  # zoom out
+                scale = 1 / zoom_scale
+
+            ax.set_xlim3d(
+                [
+                    (cur_xlim[0] - x_center) * scale + x_center,
+                    (cur_xlim[1] - x_center) * scale + x_center,
+                ]
+            )
+
+            ax.set_ylim3d(
+                [
+                    (cur_ylim[0] - y_center) * scale + y_center,
+                    (cur_ylim[1] - y_center) * scale + y_center,
+                ]
+            )
+
+            ax.set_zlim3d(
+                [
+                    (cur_zlim[0] - z_center) * scale + z_center,
+                    (cur_zlim[1] - z_center) * scale + z_center,
+                ]
+            )
+
+            fig.canvas.draw_idle()
+
+        fig.canvas.mpl_connect("scroll_event", on_scroll)
 
         max_coord = 0.0
         for p in self._planets:
@@ -276,7 +322,9 @@ class Simulation:
             color="gold",
             shade=True,
         )
-        sun_vis_size = max(40, 1000 * (self._sun.get_radius * scale) / max(limit, 1e-9))
+        real_radius_sun = self._sun.get_circumference / (2 * np.pi)
+        scaled_radius_sun = self._scale_radius(real_radius_sun)
+        sun_vis_size = max(40, scaled_radius_sun * 500)
         ax.scatter([0.0], [0.0], [0.0], color="gold", s=sun_vis_size)
 
         # Planètes
@@ -284,23 +332,53 @@ class Simulation:
         colors = [planet.get_color for planet in self._planets]
 
         for idx, planet in enumerate(self._planets):
-            vis_size = max(4, 600 * (planet._radius * scale) / max(limit, 1e-9))
+            # Rayon réel via la circonférence
+            real_radius = planet.get_circumference / (2 * np.pi)
+            # Rayon compressé avec la même loi que les positions
+            scaled_radius = self._scale_radius(real_radius)
+            # Marker visible (points, pas mètres)
+            vis_size = max(4, scaled_radius * 500)  # 500 = facteur visuel ajustable
+
             (animated,) = ax.plot(
-                [planet._pos_x[0]], [planet._pos_y[0]], [planet._pos_z[0]],
-                "o", color=colors[idx % len(colors)], markersize=vis_size
+                [planet._pos_x[0]],
+                [planet._pos_y[0]],
+                [planet._pos_z[0]],
+                "o",
+                color=colors[idx % len(colors)],
+                markersize=vis_size,
             )
             animated_objs.append(animated)
+
         def _update(i):
-            objs = []
             for idx, animated in enumerate(animated_objs):
                 p = self._planets[idx]
                 animated.set_data([p._pos_x[i]], [p._pos_y[i]])
                 animated.set_3d_properties([p._pos_z[i]])
-                objs.append(animated)
-            return tuple(objs)
-        ani = animation.FuncAnimation(
-            fig, _update, frames=len(self._planets[0]._pos_x), interval=10, blit=True
+
+            # Camera orbitale
+            if self._camera_angle_turning:
+                self._camera_angle += 0.25
+                ax.view_init(elev=20, azim=self._camera_angle)
+
+            return tuple(animated_objs)
+
+        if self._camera_angle_turning:
+            
+            ani = animation.FuncAnimation(
+            fig,
+            _update,
+            frames=len(self._planets[0]._pos_x),
+            interval=20,  
+            blit=False,  # Permet de redessiner la vue caméra à chaque frame
         )
+        else:
+            ani = animation.FuncAnimation(
+                fig,
+                _update,
+                frames=len(self._planets[0]._pos_x),
+                interval=10,
+                blit=True,
+            )
 
         ax.set_xlabel("x (AU)")
         ax.set_ylabel("y (AU)")
@@ -309,7 +387,7 @@ class Simulation:
 
         self._set_axes_equal(ax)
         plt.show()
-        
+
     def _set_axes_equal(self, ax):
         """Set 3D plot axes to equal scale.
 
@@ -325,9 +403,9 @@ class Simulation:
         ax.set_xlim3d([centers[0] - max_range / 2, centers[0] + max_range / 2])
         ax.set_ylim3d([centers[1] - max_range / 2, centers[1] + max_range / 2])
         ax.set_zlim3d([centers[2] - max_range / 2, centers[2] + max_range / 2])
-    
+
     def _scale_position(self, pos, k=0.35):
-        """ Scale the position vector for better visualization.
+        """Scale the position vector for better visualization.
 
         Args:
             pos (np.ndarray): position vector.
@@ -340,5 +418,11 @@ class Simulation:
         if r == 0:
             return pos
 
-        r_scaled = r ** k          # compression douce et progressive
+        r_scaled = r**k  
         return pos / r * r_scaled
+
+    def _scale_radius(self, radius, k=0.35):
+        ref = 1.0 / self._scale 
+        r_norm = radius / ref
+        r_scaled = r_norm ** k
+        return r_scaled

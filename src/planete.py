@@ -1,4 +1,5 @@
 import numpy as np
+from math import pi
 
 class Planete:
     def __init__(self, name, radius, mass, x, y, z, vx, vy, vz, color):
@@ -28,6 +29,8 @@ class Planete:
         self._pos_z = []
         
         self._color = color
+        
+        self._circumference = 2 * radius * pi
         
     def update_position(self, dt):
         self._pos += self._vel * dt
@@ -86,3 +89,7 @@ class Planete:
     @property
     def get_color(self):
         return self._color
+    
+    @property
+    def get_circumference(self):
+        return self._circumference
