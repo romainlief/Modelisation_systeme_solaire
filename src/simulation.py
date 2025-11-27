@@ -324,7 +324,7 @@ class Simulation:
         )
         real_radius_sun = self._sun.get_circumference / (2 * np.pi)
         scaled_radius_sun = self._scale_radius(real_radius_sun)
-        sun_vis_size = max(40, scaled_radius_sun * 500)
+        sun_vis_size = max(40, scaled_radius_sun * 12500) # modificateur taille du soleil
         ax.scatter([0.0], [0.0], [0.0], color="gold", s=sun_vis_size)
 
         # Planètes
@@ -404,7 +404,7 @@ class Simulation:
         ax.set_ylim3d([centers[1] - max_range / 2, centers[1] + max_range / 2])
         ax.set_zlim3d([centers[2] - max_range / 2, centers[2] + max_range / 2])
 
-    def _scale_position(self, pos, k=0.35):
+    def _scale_position(self, pos, k=0.25):
         """Scale the position vector for better visualization.
 
         Args:

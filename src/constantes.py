@@ -4,7 +4,7 @@ dt = 10 *3600.0      # delta t en secondes (1 heure)
 steps = 10 * 8760     # nombre de pas (~1 an en heures)
 
 # Soleil
-sun_radius = 6.9634e8
+sun_radius = 696340e3
 M_sun = 1.989e30 
 
 # Terre
